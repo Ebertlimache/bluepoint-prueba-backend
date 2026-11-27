@@ -7,3 +7,5 @@ coverage/
 api/node_modules/
 api/dist/
 api/coverage/
+
+docs/SUSTENTACION.md
