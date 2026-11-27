@@ -1,0 +1,130 @@
+Prueba técnica — Desarrollador/a Back-end 
+Semi-senior
+Bluepoint AI ·  Nov 26, 2026
+Reglas
+Construye una API pequeña de reposición de inventario y explica cómo la especificaste.
+Puedes usar IA. Valoramos más la claridad y el orden que la cantidad de código.
+Plazo: 72 horas desde que recibes este documento.
+Esfuerzo estimado: de 5 a 6 horas. Si no llegas a todo, prioriza y anota lo pendiente.
+IA: permitida, incluidos asistentes y agentes de código. Debes entender y poder
+modificar todo lo que entregues.
+Autoría: el trabajo es individual. Declara cualquier plantilla o código de terceros que
+reutilices.
+Datos: usa solo datos ficticios y no subas claves ni contraseñas reales.
+Dudas: no las resolveremos durante la prueba. Registra cada supuesto en tu
+especificación.
+Uso del ejercicio: es ficticio y solo se usará para evaluar tu postulación.
+El reto
+Una plataforma atiende a varias distribuidoras. Cada empresa necesita registrar
+movimientos de inventario y saber qué productos reponer en cada almacén.
+Funciones requeridas
+1. Registrar movimientos ( POST /movimientos): ingreso o venta de un producto en un
+almacén.
+El stock nunca puede quedar negativo, aunque lleguen ventas simultáneas.
+Repetir una petición con la misma clave de idempotencia no duplica el
+movimiento.
+2. Consultar stock ( GET /stock): stock actual y en tránsito por producto y almacén.
+3. Sugerir reposición ( GET /sugerencias-reposicion): por almacén y fecha de corte,
+devuelve qué pedir y por qué.
+4. Separar empresas: la cabecera X-Empresa-Id identifica la empresa. Ninguna puede
+ver ni modificar datos de otra. No se exige autenticación.
+Prueba técnica — Desarrollador/a Back-end Semi-senior
+Page 1 of 4
+
+===== PAGE =====
+
+Regla de cálculo
+Cada producto tiene, por almacén, plazo de entrega en días, stock de seguridad, lote de
+compra y stock en tránsito. Los días de cobertura son 14 por defecto. El stock en tránsito
+puede cargarse con datos de ejemplo.
+Ejemplo: se vendieron 300 unidades en 30 días, así que la demanda es 10 por día. Con
+plazo 7, seguridad 20, stock 50, tránsito 20 y lote 24, el punto de reorden es 90 y la
+posición es 70. La cantidad bruta es 160 y la sugerida es 168.
+El enunciado deja algunos casos sin definir. Identificarlos y decidir cómo tratarlos es parte
+de la prueba.
+Requisitos técnicos
+Usa TypeScript en modo estricto, NestJS, Prisma y PostgreSQL.
+Separa las responsabilidades en módulos y deja la regla de cálculo independiente del
+framework y de la base de datos.
+Incluye migraciones, datos de ejemplo para dos empresas y Docker Compose.
+Valida las entradas y devuelve errores consistentes.
+Documenta la API con OpenAPI (Swagger).
+Prueba al menos el ejemplo de cálculo, el aislamiento entre empresas y las ventas
+simultáneas.
+Paso Cálculo
+Demanda diaria Unidades vendidas en los 30 días que terminan en
+la fecha de corte (incluida) ÷ 30
+Posición Stock actual + stock en tránsito
+Punto de reorden Demanda diaria × plazo de entrega + stock de
+seguridad
+Condición Se evalúa reponer si posición ≤ punto de reorden
+Cantidad bruta Demanda diaria × (plazo de entrega + cobertura) +
+stock de seguridad − posición
+Cantidad sugerida Cantidad bruta redondeada hacia arriba a un
+múltiplo del lote; solo se sugiere si es mayor que 0
+Prueba técnica — Desarrollador/a Back-end Semi-senior
+Page 2 of 4
+
+===== PAGE =====
+
+Diseño en AWS (sin desplegar)
+En una página como máximo, incluye un diagrama y responde:
+1. ¿Ejecutarías este servicio en Lambda o en EC2? ¿Por qué?
+2. ¿Cómo gestionarías las conexiones a PostgreSQL y los secretos?
+3. ¿Cuándo separarías el cálculo de reposición en otro microservicio, y cómo se
+comunicarían?
+SDD y uso de IA
+Puedes usar tu propio flujo de SDD o uno similar, con las herramientas, archivos y
+estructura que prefieras, siempre que puedas explicarlo en el repositorio y en la
+sustentación. La especificación debe haber guiado la implementación.
+El repositorio debe contener todos los archivos que usaste en ese flujo, por ejemplo
+especificaciones, planes, tareas, instrucciones o prompts para agentes y bitácoras.
+En el README.md, o en un documento enlazado desde él, explica:
+Las etapas de tu flujo, las herramientas que usaste y por qué trabajas así.
+Dónde está cada archivo y para qué sirvió, incluidos tus reglas, supuestos y criterios
+de aceptación.
+Cómo la especificación guio el código y qué cambió durante el desarrollo.
+Cómo verificaste el resultado frente a tus criterios de aceptación.
+Cómo usaste la IA, con al menos dos casos en que corregiste o rechazaste una
+respuesta.
+La explicación no debe superar una página; este límite no aplica a los demás archivos del
+flujo. Prefiere frases claras a textos largos generados por IA.
+Entregables
+Envía el enlace a un repositorio Git por el mismo canal en que recibiste la prueba. Si es
+privado, pide el usuario al que debes dar acceso.
+Código, migraciones, datos de ejemplo y pruebas.
+Todos los archivos que usaste en tu flujo (SDD o similar) y la explicación pedida en la
+sección anterior.
+El diseño en AWS en docs/aws.md.
+Instrucciones para levantar el proyecto desde cero con un máximo de tres comandos.
+Evaluaremos la última versión enviada dentro del plazo.
+Prueba técnica — Desarrollador/a Back-end Semi-senior
+Page 3 of 4
+
+===== PAGE =====
+
+Evaluación
+La explicación de SDD, la claridad de conceptos y el orden suman 70 de los 100 puntos.
+Sustentación
+Quienes avancen tendrán una sesión de 45 minutos: explicarán su solución y su flujo de
+trabajo en 10 minutos, responderán preguntas y harán un cambio pequeño en vivo. En la
+sesión también podrán usar IA, compartiendo pantalla.
+Criterio Qué observamos Puntos
+SDD Flujo bien explicado y con sus archivos,
+especificación que guio el código, cambios
+justificados y uso crítico de la IA
+30
+Claridad de conceptos Decisiones y alternativas explicadas, por escrito y
+en la sustentación
+25
+Orden Estructura del repositorio y del código, nombres,
+historial de Git y documentación breve
+15
+Funcionamiento El proyecto arranca y las funciones cumplen las
+reglas
+20
+Robustez Aislamiento entre empresas, concurrencia,
+idempotencia y pruebas
+10
+Prueba técnica — Desarrollador/a Back-end Semi-senior
+Page 4 of 4

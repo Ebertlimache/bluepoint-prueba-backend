@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Empresa {
+  id        String   @id
+  nombre    String
+  createdAt DateTime @default(now())
+
+  almacenes    Almacen[]
+  productos    Producto[]
+  movimientos  Movimiento[]
+}
+
+model Almacen {
+  id        String @id
+  empresaId String
+  nombre    String
+
+  empresa          Empresa           @relation(fields: [empresaId], references: [id])
+  productosAlmacen ProductoAlmacen[]
+  movimientos      Movimiento[]
+
+  @@index([empresaId])
+}
+
+model Producto {
+  id        String @id
+  empresaId String
+  sku       String
+  nombre    String
+
+  empresa          Empresa           @relation(fields: [empresaId], references: [id])
+  productosAlmacen ProductoAlmacen[]
+  movimientos      Movimiento[]
+
+  @@unique([empresaId, sku])
+  @@index([empresaId])
+}
+
+model ProductoAlmacen {
+  id               String @id @default(cuid())
+  empresaId        String
+  productoId       String
+  almacenId        String
+  stockActual      Int    @default(0)
+  stockEnTransito  Int    @default(0)
+  plazoEntregaDias Int
+  stockSeguridad   Int
+  loteCompra       Int
+
+  producto Producto @relation(fields: [productoId], references: [id])
+  almacen  Almacen  @relation(fields: [almacenId], references: [id])
+
+  @@unique([productoId, almacenId])
+  @@index([empresaId, almacenId])
+}
+
+model Movimiento {
+  id              String         @id @default(cuid())
+  empresaId       String
+  productoId      String
+  almacenId       String
+  tipo            TipoMovimiento
+  cantidad        Int
+  stockResultante Int
+  idempotencyKey  String
+  createdAt       DateTime       @default(now())
+
+  empresa  Empresa  @relation(fields: [empresaId], references: [id])
+  producto Producto @relation(fields: [productoId], references: [id])
+  almacen  Almacen  @relation(fields: [almacenId], references: [id])
+
+  @@unique([empresaId, idempotencyKey])
+  @@index([empresaId, productoId, almacenId, tipo, createdAt])
+}
+
+enum TipoMovimiento {
+  INGRESO
+  VENTA
+}
